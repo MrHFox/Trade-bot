@@ -1,0 +1,62 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © wwqt36
+
+//@version=4
+strategy("Cross EMA TS v.2", overlay=true,pyramiding=5,initial_capital=1000,process_orders_on_close=true,default_qty_value=1)
+
+e0=input(1,title="Main")
+ema0=440
+ema1=input(231,title=" Ema1")
+ema2=input(1600,title="s Ema2")
+ts=input(35900,title="TS")
+sl=input(19000,title="SL")
+
+sh=input(3,title="Main shift")
+nsh=input(16,title="Next shift")
+sh2=input(8,title=" 2 shift")
+sh3=input(2,title=" 3 shift")
+
+
+//var line1 = line.new(0, high, bar_index, low, extend=extend.right)
+//line.set_x2(line1, bar_index[10])
+//line.set_xloc(line1, time[1000], time + 60 * 60 * 24, xloc.bar_time)
+
+plot(series=ema(close, ema0),color=color.green)
+plot(series=ema(close, ema2),color=color.yellow)
+
+plot(series=ema(close[sh], e0),color=color.red)
+plot(series=ema(close[sh], ema1),color=color.black)
+
+longCondition = crossover(sma(close[sh], e0), ema(close, ema1))
+longCondition3 = crossover(sma(close[sh+sh3], e0), ema(close, ema1))
+longCondition2 = crossover(sma(close[sh+sh2], e0), ema(close, ema1))
+longCondition4 = crossover(sma(close[sh+nsh], e0), ema(close, ema1))
+if((high[sh])<(sma(close, e0)) and (longCondition))
+    strategy.entry("BUY", strategy.long)
+if((high[sh])<(sma(close, e0)) and(high[sh+2])<(sma(close, e0)) and (longCondition4))
+    strategy.entry("BUY", strategy.long, comment="B1")
+if((high[sh2])<(sma(close, e0)) and(high[sh+2])<(sma(close, e0)) and (longCondition2))
+    strategy.entry("BUY", strategy.long, comment="B2")    
+if((high[sh3])<(sma(close, e0)) and(high[sh+2])<(sma(close, e0)) and (longCondition3))
+    strategy.entry("BUY", strategy.long, comment="B3") 
+
+if(longCondition) 
+    strategy.exit("exit", "SELL", loss=sl, trail_points=100, trail_offset=ts)
+    
+    
+shortCondition = crossunder(sma(close[sh], e0), ema(close, ema1))
+shortCondition2 = crossunder(sma(close[sh+sh2], e0), ema(close, ema1))
+shortCondition3 = crossunder(sma(close[sh+sh3], e0), ema(close, ema1))
+shortCondition4 = crossunder(sma(close[sh+nsh], e0), ema(close, ema1)) 
+
+if((sma(close, e0)<(low[sh])) and (shortCondition))
+    strategy.entry("SELL", strategy.short)
+if((sma(close, e0)<(low[sh])) and(sma(close, e0)<(low[sh+2])) and (shortCondition4))
+    strategy.entry("SELL", strategy.short, comment="S1")
+if((sma(close, e0)<(low[sh2])) and(sma(close, e0)<(low[sh+2])) and (shortCondition2))
+    strategy.entry("SELL", strategy.short, comment="S2")
+if((sma(close, e0)<(low[sh3])) and(sma(close, e0)<(low[sh+2])) and (shortCondition3))
+    strategy.entry("SELL", strategy.short, comment="S3")
+ 
+if(shortCondition)    
+    strategy.exit("exit", "BUY", loss=sl, trail_points=100, trail_offset=ts)    
